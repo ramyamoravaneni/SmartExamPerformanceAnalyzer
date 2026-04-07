@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Exam Analyser | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="background-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-card">
+            <div class="logo">
+                <h2 class="gradient-text">Smart Analyser</h2>
+            </div>
+            <nav>
+                <button class="nav-item active" data-target="dashboard">
+                    <span class="icon">📊</span> Dashboard
+                </button>
+                <button class="nav-item" data-target="add-student">
+                    <span class="icon">➕</span> Single Prediction
+                </button>
+                <button class="nav-item" data-target="bulk-upload">
+                    <span class="icon">📁</span> Bulk CSV Upload
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/export" class="export-btn" download>📥 Export to CSV</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+
+            <!-- DASHBOARD SECTION -->
+            <section id="dashboard" class="content-section active">
+                <header class="section-header">
+                    <h2>Analytics Overview</h2>
+                    <p class="subtitle">Aggregate data from all student records</p>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-card">
+                        <h4>Total Records</h4>
+                        <p class="stat-value" id="totalRecords">--</p>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <h4>Average Score</h4>
+                        <p class="stat-value" id="avgScore">--%</p>
+                    </div>
+                </div>
+
+                <div class="charts-grid mt-2">
+                    <div class="chart-card glass-card">
+                        <h3>Performance Tiers</h3>
+                        <div class="canvas-wrapper">
+                            <canvas id="categoryPieChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card glass-card">
+                        <h3>Average Subject Marks</h3>
+                        <div class="canvas-wrapper">
+                            <canvas id="avgSubjectBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container glass-card mt-2">
+                    <h3>Top Performers (Leaderboard)</h3>
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Predicted Score</th>
+                                <th>Category</th>
+                                <th>Weakest Subject</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody">
+                            <tr><td colspan="4" class="text-center">Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SINGLE PREDICTION SECTION -->
+            <section id="add-student" class="content-section">
+                 <header class="section-header">
+                    <h2>Evaluate Student</h2>
+                    <p class="subtitle">Run predictions on individual parameters</p>
+                </header>
+
+                <div class="glass-card form-wrapper">
+                    <form id="predictionForm" class="grid-form">
+                        <div class="form-group full-width">
+                            <label for="studentName">Student Name</label>
+                            <input type="text" id="studentName" name="studentName" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="math">Math Marks (0-100)</label>
+                            <input type="number" id="math" name="math" min="0" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="science">Science Marks (0-100)</label>
+                            <input type="number" id="science" name="science" min="0" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="english">English Marks (0-100)</label>
+                            <input type="number" id="english" name="english" min="0" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="attendance">Attendance (%)</label>
+                            <input type="number" id="attendance" name="attendance" min="0" max="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="studyHours">Daily Study Hours</label>
+                            <input type="number" id="studyHours" name="studyHours" min="0" required>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <button type="submit" class="submit-btn" id="submitBtn">
+                                <span class="btn-text">Predict & Save</span>
+                                <div class="loader hidden" id="singleLoader"></div>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="singleErrorBox" class="error-msg hidden"></div>
+                </div>
+
+                <!-- Live Results -->
+                <div id="singleResultBox" class="glass-card mt-2 hidden result-anim">
+                    <h3 class="highlight-text mb-1">Results for <span id="resName">--</span></h3>
+                    <div class="single-res-grid">
+                        <div class="res-score">
+                            <div class="score-circle">
+                                <h2><span id="resScore">--</span>%</h2>
+                            </div>
+                            <div class="badge mt-1" id="resBadge">--</div>
+                        </div>
+                        <div class="res-details">
+                            <h4>Intelligent Suggestions</h4>
+                            <p class="text-muted text-sm mb-1">Automatically pinpointing flaws in student's core learning subjects.</p>
+                            <ul id="resSuggestionsList" class="suggestions-list"></ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BULK UPLOAD SECTION -->
+            <section id="bulk-upload" class="content-section">
+                <header class="section-header">
+                    <h2>Batch Processing</h2>
+                    <p class="subtitle">Upload a CSV to generate predictions for multiple students instantly.</p>
+                </header>
+
+                <div class="glass-card upload-wrapper text-center" id="dropZone">
+                    <div class="upload-icon mb-1">📁</div>
+                    <h3>Drag & Drop your CSV here</h3>
+                    <p class="text-muted text-sm mb-2">or click "Browse". Must contain columns: Name, Math, Science, English, Attendance, StudyHours</p>
+                    
+                    <form id="uploadForm">
+                        <input type="file" id="csvFile" accept=".csv" required class="file-input hidden" style="display: none;">
+                        <button type="button" class="btn-browse mb-2" onclick="document.getElementById('csvFile').click()">Browse Files</button>
+                        <div id="selectedFileName" class="text-muted text-sm mb-2" style="font-weight:bold; color: var(--primary);"></div>
+                        
+                        <button type="submit" class="submit-btn mt-2" id="uploadBtn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                            <span class="btn-text">Upload & Process</span>
+                            <div class="loader hidden" id="uploadLoader"></div>
+                        </button>
+                    </form>
+
+                    <div id="uploadFeedback" class="mt-2 hidden"></div>
+                </div>
+
+                <!-- Upload Results Data Table -->
+                <div id="uploadResultsContainer" class="table-container glass-card mt-2 hidden">
+                    <h3>Uploaded Records Analysis</h3>
+                    <div style="overflow-x: auto;">
+                        <table class="leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Predicted Score</th>
+                                    <th>Category</th>
+                                    <th>Weakest Subject</th>
+                                </tr>
+                            </thead>
+                            <tbody id="uploadResultsBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
